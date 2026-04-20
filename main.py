@@ -5,9 +5,6 @@ global df
 df = bikeRentalData
 # Need to save the DataFrame as a new variable for drop to take place
 df = df.drop_duplicates()
-print(df.duplicated().sum())
-print(' ')
-
 
 def fiveNumSummary():
     stats = pd.DataFrame({
@@ -19,8 +16,6 @@ def fiveNumSummary():
     })
     print(stats)
 
-print(df[df.isnull().any(axis=1)])
-
 def fillNull(df):
     values = {
         "temp": df['temp'].mean(),
@@ -31,6 +26,26 @@ def fillNull(df):
     return dfNullFilled
     print("Null Values filled")
 
-df = fillNull(df) 
-print(df[df.isnull().any(axis=1)])
+def fixOutliers(df):
+    for x in ['temp', 'atemp', 'humidity', 'windspeed', 'count']:
+        mean = df[x].mean()
+        std = df[x].std()
+
+        # Using 3stds to gather 99% of all average values
+        lowerBound = mean - 3 * std
+        if lowerBound < 0:
+            lowerBound = 0
+        upperBound = mean + 3 * std
+
+        df = df[(df[x] >= lowerBound) & (df[x] <= upperBound)]
+        print(df)
+    return df
+
+
+print(round((df.isnull().sum() / df.shape[0]) * 100, 2))
+# df = fillNull(df) 
+# print(df[df.isnull().any(axis=1)])
+df = fixOutliers(df)
+# Do it twice to remove all the outliers
+df = fixOutliers(df)
 print(fiveNumSummary())
