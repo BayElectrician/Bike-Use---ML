@@ -1,4 +1,5 @@
 import pandas as pd
+import matplotlib.pyplot as plt
 
 bikeRentalData = pd.read_csv("./bike_rental.csv")
 # Need to save the DataFrame as a new variable for drop to take place
@@ -42,9 +43,39 @@ def cleanData(df):
     df = df.drop_duplicates()
     df = fillNull(df)
     df = fixOutliers(df)
+    df = fixOutliers(df)
     return df
+
+
+def generateGraphs(df):
+    # Count, Average Temp, Season
+    for season in ['Summer', 'Autumn', 'Winter', 'Spring']:
+        dfFiltered = df[df['season'] == season]
+        x, y = dfFiltered['temp'], dfFiltered['count']
+        plt.scatter(x, y, label=season, alpha=0.3, edgecolors='none')
+
+    plt.legend()
+    
+    plt.xlabel('Temperature(C)')
+    plt.ylabel('Count')
+    plt.grid()
+    plt.show()
+
+    for weather in ['Cloudy', 'Clear', 'Rain', 'Storm']:
+        dfFiltered = df[df['weather'] == weather]
+        x, y = dfFiltered['temp'], dfFiltered['count']
+        plt.scatter(x, y, label=weather, alpha=0.3, edgecolors='none')
+
+    plt.legend()
+    
+    plt.xlabel('Temperature(C)')
+    plt.ylabel('Count')
+    plt.grid()
+    plt.show()
+
 
 bikeRentalData = cleanData(bikeRentalData)
 print(bikeRentalData)
 print(round((bikeRentalData.isnull().sum() / bikeRentalData.shape[0]) * 100, 2))
 print(fiveNumSummary(bikeRentalData))
+generateGraphs(bikeRentalData)
