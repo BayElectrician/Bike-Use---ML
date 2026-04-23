@@ -48,7 +48,7 @@ def cleanData(df):
 
 
 def generateGraphs(df):
-    # Count, Average Temp, Season
+    # Scatter - Count, Average Temp, Season
     for season in ['Summer', 'Autumn', 'Winter', 'Spring']:
         dfFiltered = df[df['season'] == season]
         x, y = dfFiltered['temp'], dfFiltered['count']
@@ -61,18 +61,36 @@ def generateGraphs(df):
     plt.grid()
     plt.show()
 
+    # Scatter - Count, Average Temp, Weather
     for weather in ['Cloudy', 'Clear', 'Rain', 'Storm']:
         dfFiltered = df[df['weather'] == weather]
         x, y = dfFiltered['temp'], dfFiltered['count']
         plt.scatter(x, y, label=weather, alpha=0.3, edgecolors='none')
 
     plt.legend()
-    
     plt.xlabel('Temperature(C)')
     plt.ylabel('Count')
     plt.grid()
     plt.show()
 
+    # Bar chart - Public Holiday count
+    for publicDay in [0, 1]:
+        dfFiltered = df[df['holiday'] == publicDay]
+        x, y = dfFiltered['count'], dfFiltered['holiday']
+        plt.scatter(x, y, label=publicDay, alpha=0.3)
+    
+    plt.yticks([0, 1], ['Normal', 'Public Holiday'])
+    plt.xlabel('Count')
+    plt.ylabel('Day Type')
+    plt.legend()
+    plt.grid(axis = 'x')
+    plt.show()
+
+    # Number of Public Holidays a Year
+    x = ['Normal', 'Public Holiday']
+    y = [(df['holiday'] == 0).sum(), (df['holiday'] == 1).sum()]
+    plt.bar(x, y)
+    plt.show()
 
 bikeRentalData = cleanData(bikeRentalData)
 print(bikeRentalData)
