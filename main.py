@@ -1,5 +1,6 @@
 import pandas as pd
 import matplotlib.pyplot as plt
+import seaborn as sns
 
 bikeRentalData = pd.read_csv("./bike_rental.csv")
 # Need to save the DataFrame as a new variable for drop to take place
@@ -92,8 +93,26 @@ def generateGraphs(df):
     plt.bar(x, y)
     plt.show()
 
-bikeRentalData = cleanData(bikeRentalData)
+
+def EDAgraphs():
+    # Large values
+    sns.boxplot(data=bikeRentalData['count'])
+    plt.title('Count Column Variation')
+    plt.show()
+
+    # Big STD
+    sns.boxplot(data=[bikeRentalData['temp'], bikeRentalData['atemp'], bikeRentalData['windspeed']])
+    plt.show()
+
+
+
+#bikeRentalData = cleanData(bikeRentalData)
 print(bikeRentalData)
+# Calculating percentage of column is NULL
 print(round((bikeRentalData.isnull().sum() / bikeRentalData.shape[0]) * 100, 2))
+
+
 print(fiveNumSummary(bikeRentalData))
-generateGraphs(bikeRentalData)
+# generateGraphs(bikeRentalData)
+
+
