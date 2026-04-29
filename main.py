@@ -1,8 +1,11 @@
 import pandas as pd
+import numpy as np
 import os
 import matplotlib.pyplot as plt
+import matplotlib.dates as mdates
 import seaborn as sns
-
+from statsmodels.graphics.tsaplots import plot_acf
+from statsmodels.tsa.stattools import adfuller
 
 def fiveNumSummary(df):
     stats = pd.DataFrame({
@@ -92,6 +95,18 @@ def generateGraphs(df):
     plt.bar(x, y)
     plt.show()
 
+    # Time Series
+    df['date'] = pd.to_datetime(df['date'], dayfirst=True, errors='coerce')
+    plt.figure(figsize=(12,4))
+    sns.lineplot(data=df, x='date', y='count', errorbar=None)
+
+    ax = plt.gca()
+    ax.xaxis.set_major_locator(mdates.MonthLocator(bymonthday=1))    # 1st of each month
+    ax.xaxis.set_major_formatter(mdates.DateFormatter('%Y-%m-%d'))    # or '%b %Y' / '%Y-%m'
+    plt.xticks(rotation=45)
+    ax.set_xlim(df['date'].min(), df['date'].max())
+    plt.show()
+
 
 def basicEDAGraphs(df):
     # Large values
@@ -104,8 +119,7 @@ def basicEDAGraphs(df):
     plt.show()
 
 
-def startFunc():
-    bikeRentalData = pd.read_csv("./bike_rental.csv")
+def startFunc(bikeRentalData):
     os.system('cls')
     print("The follow options can be done with the Dataset")
     print(' ' * 4, "1. 4 Number Summary")
@@ -134,7 +148,7 @@ def whichQuestion(num, bikeRentalData):
     elif num == 2:
         basicEDAGraphs(bikeRentalData)
     elif num == 3:
-        print("Nothing Here Yet")
+        generateGraphs(bikeRentalData)
     elif num == 4:
         bikeRentalData = cleanData(bikeRentalData)
     elif num == 5:
@@ -145,17 +159,9 @@ def whichQuestion(num, bikeRentalData):
 
     print(' ')
     os.system("pause")
-    startFunc()
+    startFunc(bikeRentalData)
+    
 
 
-startFunc()
-#bikeRentalData = cleanData(bikeRentalData)
-#print(bikeRentalData)
-# Calculating percentage of column is NULL
-#print(round((bikeRentalData.isnull().sum() / bikeRentalData.shape[0]) * 100, 2))
-
-
-#print(fiveNumSummary(bikeRentalData))
-# generateGraphs(bikeRentalData)
-
-
+bikeRentalData = pd.read_csv("./bike_rental.csv")
+startFunc(bikeRentalData)
