@@ -1,9 +1,8 @@
 import pandas as pd
+import os
 import matplotlib.pyplot as plt
 import seaborn as sns
 
-bikeRentalData = pd.read_csv("./bike_rental.csv")
-# Need to save the DataFrame as a new variable for drop to take place
 
 def fiveNumSummary(df):
     stats = pd.DataFrame({
@@ -94,25 +93,69 @@ def generateGraphs(df):
     plt.show()
 
 
-def EDAgraphs():
+def basicEDAGraphs(df):
     # Large values
-    sns.boxplot(data=bikeRentalData['count'])
+    sns.boxplot(data=df['count'])
     plt.title('Count Column Variation')
     plt.show()
 
     # Big STD
-    sns.boxplot(data=[bikeRentalData['temp'], bikeRentalData['atemp'], bikeRentalData['windspeed']])
+    sns.boxplot(data=[df['temp'], df['atemp'], df['windspeed']])
     plt.show()
 
 
+def startFunc():
+    bikeRentalData = pd.read_csv("./bike_rental.csv")
+    os.system('cls')
+    print("The follow options can be done with the Dataset")
+    print(' ' * 4, "1. 4 Number Summary")
+    print(' ' * 4, "2. Basic EDA Graphs")
+    print(' ' * 4, "3. Complex EDA Graphs")
+    print(' ' * 4, "4. Data Cleanse")
+    print(' ' * 4, "5. Machine Learning")
+    
+    print(' ')
+    num = 110
+    while num not in range(0,6):
+        print("To Exit Type 0")
+        userInput = input("Which Question Would you like Answered?: ")
+        try:
+            num = int(userInput)
+        except ValueError:
+            print("Please enter an interger number between 0 and 9")
 
+    print(' ')
+    whichQuestion(num, bikeRentalData)
+
+
+def whichQuestion(num, bikeRentalData):
+    if num == 1:
+        fiveNumSummary(bikeRentalData)
+    elif num == 2:
+        basicEDAGraphs(bikeRentalData)
+    elif num == 3:
+        print("Nothing Here Yet")
+    elif num == 4:
+        bikeRentalData = cleanData(bikeRentalData)
+    elif num == 5:
+        print("Nothing Here Yet")
+    else:
+        print("Exiting Code Now")
+        exit()
+
+    print(' ')
+    os.system("pause")
+    startFunc()
+
+
+startFunc()
 #bikeRentalData = cleanData(bikeRentalData)
-print(bikeRentalData)
+#print(bikeRentalData)
 # Calculating percentage of column is NULL
-print(round((bikeRentalData.isnull().sum() / bikeRentalData.shape[0]) * 100, 2))
+#print(round((bikeRentalData.isnull().sum() / bikeRentalData.shape[0]) * 100, 2))
 
 
-print(fiveNumSummary(bikeRentalData))
+#print(fiveNumSummary(bikeRentalData))
 # generateGraphs(bikeRentalData)
 
 
