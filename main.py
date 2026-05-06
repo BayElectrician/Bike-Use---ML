@@ -4,8 +4,20 @@ import os
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
 import seaborn as sns
+# Making Graphs
 from statsmodels.graphics.tsaplots import plot_acf
 from statsmodels.tsa.stattools import adfuller
+# Linear Regression
+from sklearn.linear_model import LinearRegression
+from sklearn.metrics import mean_squared_error, r2_score
+from sklearn.model_selection import train_test_split
+# Descion Tree
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.metrics import classification_report, accuracy_score
+from sklearn.ensemble import RandomForestClassifier
+# One-Hot Encoder
+from sklearn.preprocessing import OneHotEncoder
+from sklearn.compose import ColumnTransformer
 
 def fiveNumSummary(df):
     stats = pd.DataFrame({
@@ -119,6 +131,59 @@ def basicEDAGraphs(df):
     plt.show()
 
 
+def linearRegression(df):
+    # Parse with day-first, errors needed to work
+    df['date'] = pd.to_datetime(df['date'], dayfirst=True, errors='coerce')
+    failures = df[df['date'].isna() & df['date'].notna()].index
+    # Display the failed features
+    print("Failed rows:\n", failures)
+    print("Deleting Row outside of date Range")
+    df.drop(failures, inplace=True)
+
+    # Split Data
+    X = df.drop(["date", "count"], axis=1)
+    y = df["count"]
+    categoricalFeatures = ['season', 'weather']
+    #Making all Data numerical
+    transformer = ColumnTransformer([("one_hot",
+                                    OneHotEncoder(),
+                                    categoricalFeatures)],
+                                    remainder="passthrough"
+                                    )
+    transformed_X = transformer.fit_transform(X)
+
+    # Split Train and Test data
+    X_train, X_test, y_train, y_test = train_test_split(transformed_X,
+                                                        y,
+                                                        test_size=0.3)
+    # Train model
+    reg = LinearRegression()
+    reg.fit(X_train, y_train)
+
+    # Evaluate
+    y_pred = reg.predict(X_test)
+    print("MSE:", mean_squared_error(y_test, y_pred))
+    print("R² score:", r2_score(y_test, y_pred))
+
+    sns.regplot(x=y_test, y=y_pred, ci=None, line_kws={"color":"red"})
+    plt.xlabel("Actual")
+    plt.ylabel("Predicted")
+    plt.show()
+    #sns.plot(X, y_pred)
+    '''
+    # Time Series
+    df['date'] = pd.to_datetime(df['date'], dayfirst=True, errors='coerce')
+    plt.figure(figsize=(12,4))
+    sns.lineplot(data=df, x='date', y='count', errorbar=None)
+
+    ax = plt.gca()
+    ax.xaxis.set_major_locator(mdates.MonthLocator(bymonthday=1))    # 1st of each month
+    ax.xaxis.set_major_formatter(mdates.DateFormatter('%Y-%m-%d'))    # or '%b %Y' / '%Y-%m'
+    plt.xticks(rotation=45)
+    ax.set_xlim(df['date'].min(), df['date'].max())
+    plt.show()
+    '''
+
 def startFunc(bikeRentalData):
     os.system('cls')
     print("The follow options can be done with the Dataset")
@@ -152,7 +217,7 @@ def whichQuestion(num, bikeRentalData):
     elif num == 4:
         bikeRentalData = cleanData(bikeRentalData)
     elif num == 5:
-        print("Nothing Here Yet")
+        linearRegression(bikeRentalData)
     else:
         print("Exiting Code Now")
         exit()
