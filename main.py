@@ -9,12 +9,10 @@ from statsmodels.graphics.tsaplots import plot_acf
 from statsmodels.tsa.stattools import adfuller
 # Linear Regression
 from sklearn.linear_model import LinearRegression
+from sklearn.ensemble import RandomForestRegressor
 from sklearn.metrics import mean_squared_error, r2_score
 from sklearn.model_selection import train_test_split
-# Descion Tree
-from sklearn.tree import DecisionTreeClassifier
-from sklearn.metrics import classification_report, accuracy_score
-from sklearn.ensemble import RandomForestClassifier
+from sklearn.preprocessing import LabelEncoder
 # One-Hot Encoder
 from sklearn.preprocessing import OneHotEncoder
 from sklearn.compose import ColumnTransformer
@@ -137,21 +135,21 @@ def linearRegression(df):
     failures = df[df['date'].isna() & df['date'].notna()].index
     # Display the failed features
     print("Failed rows:\n", failures)
-    print("Deleting Row outside of date Range")
+    print("Deleting Row outside of date range")
     df.drop(failures, inplace=True)
 
     # Split Data
     X = df.drop(["date", "count"], axis=1)
     y = df["count"]
     categoricalFeatures = ['season', 'weather']
-    #Making all Data numerical
+
+    # Making all Data numerical
     transformer = ColumnTransformer([("one_hot",
                                     OneHotEncoder(),
                                     categoricalFeatures)],
-                                    remainder="passthrough"
-                                    )
+                                    remainder="passthrough")
     transformed_X = transformer.fit_transform(X)
-
+    print(transformed_X[0])
     # Split Train and Test data
     X_train, X_test, y_train, y_test = train_test_split(transformed_X,
                                                         y,
@@ -164,25 +162,63 @@ def linearRegression(df):
     y_pred = reg.predict(X_test)
     print("MSE:", mean_squared_error(y_test, y_pred))
     print("R² score:", r2_score(y_test, y_pred))
+    #print("Accuracy:", accuracy_score(y_test, y_pred))
+    #print(classification_report(y_test, y_pred))
+
 
     sns.regplot(x=y_test, y=y_pred, ci=None, line_kws={"color":"red"})
     plt.xlabel("Actual")
     plt.ylabel("Predicted")
+    plt.title("Comparing predicted vs actual Count Values")
     plt.show()
-    #sns.plot(X, y_pred)
-    '''
-    # Time Series
-    df['date'] = pd.to_datetime(df['date'], dayfirst=True, errors='coerce')
-    plt.figure(figsize=(12,4))
-    sns.lineplot(data=df, x='date', y='count', errorbar=None)
 
-    ax = plt.gca()
-    ax.xaxis.set_major_locator(mdates.MonthLocator(bymonthday=1))    # 1st of each month
-    ax.xaxis.set_major_formatter(mdates.DateFormatter('%Y-%m-%d'))    # or '%b %Y' / '%Y-%m'
-    plt.xticks(rotation=45)
-    ax.set_xlim(df['date'].min(), df['date'].max())
-    plt.show()
-    '''
+    return reg
+
+
+def predictCount(model):
+    season = input("What season is this in?(Summer/Autumn/Winter/Spring): ")
+    holiday = input("Is this a public holiday day?(Y/n): ")
+    if holiday == "Y":
+        holiday = 1
+    else:
+        holiday = 0
+    workDay = input("Is this a work day?(Y/n): ")
+    if workDay == "Y":
+        workDay = 1
+    else:
+        workDay = 0
+    weather = input("What is the predicted weather?(Clear, Cloudy, Rain, Storm): ")
+    temp = round(float(input("Input what will the temperature be?: ")), 1)
+    atemp = round(float(input("What is the apparent temperature?: ")), 1)
+    humidity = round(float(input("What is the humidity?: ")), 1)
+    windSpeed = round(float(input("What is the windspeed in?(km/h): ")), 1)
+
+    X = pd.DataFrame([{
+        "season": season, 
+        "holiday": holiday, 
+        "workingday": workDay,
+        "weather": weather,
+        "temp": temp,
+        "atemp": atemp,
+        "humidity": humidity,
+        "windspeed": windSpeed
+        }])
+    # Making all Data numerical
+    categoricalFeatures = ['season','weather', 'holiday', 'workingday']
+    transformer = ColumnTransformer([("one_hot",
+                                    OneHotEncoder(categories = [
+                                        ["Summer", "Autumn", "Winter", "Spring"],
+                                        ["Clear", "Cloudy", "Rain", "Storm"],
+                                        [0, 1],
+                                        [0, 1]]),
+                                    categoricalFeatures)],
+                                    remainder="passthrough")
+    transformed_X = transformer.fit_transform(X)
+
+    print(transformed_X)
+    output = model.predict(transformed_X)
+    print(output)
+
 
 def startFunc(bikeRentalData):
     os.system('cls')
@@ -192,10 +228,11 @@ def startFunc(bikeRentalData):
     print(' ' * 4, "3. Complex EDA Graphs")
     print(' ' * 4, "4. Data Cleanse")
     print(' ' * 4, "5. Machine Learning")
+    print(' ' * 4, "6. Predict a Count")
     
     print(' ')
     num = 110
-    while num not in range(0,6):
+    while num not in range(0,7):
         print("To Exit Type 0")
         userInput = input("Which Question Would you like Answered?: ")
         try:
@@ -205,7 +242,6 @@ def startFunc(bikeRentalData):
 
     print(' ')
     whichQuestion(num, bikeRentalData)
-
 
 def whichQuestion(num, bikeRentalData):
     if num == 1:
@@ -217,7 +253,10 @@ def whichQuestion(num, bikeRentalData):
     elif num == 4:
         bikeRentalData = cleanData(bikeRentalData)
     elif num == 5:
-        linearRegression(bikeRentalData)
+        global model
+        model = linearRegression(bikeRentalData)
+    elif num == 6:
+        predictCount(model)
     else:
         print("Exiting Code Now")
         exit()
