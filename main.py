@@ -116,6 +116,34 @@ def generateGraphs(df):
     plt.xticks(rotation=45)
     ax.set_xlim(df['date'].min(), df['date'].max())
     plt.show()
+    # Time Series Resampling Plot
+    # parse dates (day/month/year)
+    df['date'] = pd.to_datetime(df['date'], dayfirst=True, errors='coerce')
+    failures = df[df['date'].isna() & df['date'].notna()].index
+    # Display the failed features
+    print("Failed rows:\n", failures)
+    print("Deleting Row outside of date range")
+    df.drop(failures, inplace=True)
+
+    # convert numeric columns
+    num_cols = ['temp','atemp','humidity','windspeed','count','holiday','workingday']
+    df[num_cols] = df[num_cols].apply(pd.to_numeric, errors='coerce')
+
+    # set datetime index
+    df = df.set_index('date').sort_index()
+
+    # resample to monthly mean (for numeric cols)
+    df_resampled = df.resample('ME').mean(numeric_only=True)
+    sns.set(style="whitegrid") 
+
+    plt.figure(figsize=(12, 4))  
+    sns.lineplot(data=df_resampled, x=df_resampled.index, y='count', errorbar=None, color='blue')
+
+    plt.xlabel('Date')
+    plt.ylabel('Count')
+    plt.title('Monthly Resampling of Bicycle Rentals Over Time')
+
+    plt.show()
 
 
 def basicEDAGraphs(df):
