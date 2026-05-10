@@ -9,7 +9,7 @@ from statsmodels.graphics.tsaplots import plot_acf
 from statsmodels.tsa.stattools import adfuller
 # Linear Regression
 from sklearn.linear_model import LinearRegression
-from sklearn.metrics import mean_squared_error, r2_score
+from sklearn.metrics import mean_squared_error, r2_score, root_mean_squared_error, root_mean_squared_log_error
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import LabelEncoder
 # One-Hot Encoder
@@ -191,9 +191,8 @@ def linear_regression(df):
     y_pred = reg.predict(X_test)
     print("MSE:", mean_squared_error(y_test, y_pred))
     print("R² score:", r2_score(y_test, y_pred))
-    #print("Accuracy:", accuracy_score(y_test, y_pred))
-    #print(classification_report(y_test, y_pred))
-
+    print("RMSE:", root_mean_squared_error(y_test, y_pred))
+    print("RMLE:", root_mean_squared_log_error(y_test, y_pred))
 
     sns.regplot(x=y_test, y=y_pred, ci=None, line_kws={"color":"red"})
     plt.xlabel("Actual Count")
