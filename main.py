@@ -175,7 +175,7 @@ def linear_regression(df):
     # Making all Data numerical
     transformer = ColumnTransformer([("one_hot",
                                     OneHotEncoder(),
-                                    categoricalFeatures)],
+                                    categorical_features)],
                                     remainder="passthrough")
     transformed_X = transformer.fit_transform(X)
     print(transformed_X[0])
