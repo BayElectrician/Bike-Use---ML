@@ -9,7 +9,6 @@ from statsmodels.graphics.tsaplots import plot_acf
 from statsmodels.tsa.stattools import adfuller
 # Linear Regression
 from sklearn.linear_model import LinearRegression
-from sklearn.ensemble import RandomForestRegressor
 from sklearn.metrics import mean_squared_error, r2_score
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import LabelEncoder
@@ -17,7 +16,7 @@ from sklearn.preprocessing import LabelEncoder
 from sklearn.preprocessing import OneHotEncoder
 from sklearn.compose import ColumnTransformer
 
-def fiveNumSummary(df):
+def five_num_summary(df):
     stats = pd.DataFrame({
         'min': round(df.min(numeric_only=True), 2),
         'max': round(df.max(numeric_only=True), 2),
@@ -27,44 +26,44 @@ def fiveNumSummary(df):
     })
     print(stats)
 
-def fillNull(df):
+def fill_null(df):
     values = {
         "temp": df['temp'].mean(),
         "atemp": df['atemp'].mean(),
         "humidity": df['humidity'].mean()
     }
-    dfNullFilled=df.fillna(value=values)
-    return dfNullFilled
+    df_null_filled=df.fillna(value=values)
+    return df_null_filled
     print("Null Values filled")
 
-def fixOutliers(df):
+def fix_outliers(df):
     for x in ['temp', 'atemp', 'humidity', 'windspeed', 'count']:
         mean = df[x].mean()
         std = df[x].std()
 
         # Using 3stds to gather 99% of all average values
-        lowerBound = mean - 2.5 * std
-        if lowerBound < 0:
-            lowerBound = 0
-        upperBound = mean + 2.5 * std
+        lower_bound = mean - 2.5 * std
+        if lower_bound < 0:
+            lower_bound = 0
+        upper_bound = mean + 2.5 * std
 
-        df = df[(df[x] >= lowerBound) & (df[x] <= upperBound)]
+        df = df[(df[x] >= lower_bound) & (df[x] <= upper_bound)]
 
     return df
 
-def cleanData(df):
+def clean_data(df):
     df = df.drop_duplicates()
-    df = fillNull(df)
-    df = fixOutliers(df)
-    df = fixOutliers(df)
+    df = fill_null(df)
+    df = fix_outliers(df)
+    df = fix_outliers(df)
     return df
 
 
-def generateGraphs(df):
+def generate_graphs(df):
     # Scatter - Count, Average Temp, Season
     for season in ['Summer', 'Autumn', 'Winter', 'Spring']:
-        dfFiltered = df[df['season'] == season]
-        x, y = dfFiltered['temp'], dfFiltered['count']
+        df_filtered = df[df['season'] == season]
+        x, y = df_filtered['temp'], df_filtered['count']
         plt.scatter(x, y, label=season, alpha=0.3, edgecolors='none')
 
     plt.legend()
@@ -76,8 +75,8 @@ def generateGraphs(df):
 
     # Scatter - Count, Average Temp, Weather
     for weather in ['Cloudy', 'Clear', 'Rain', 'Storm']:
-        dfFiltered = df[df['weather'] == weather]
-        x, y = dfFiltered['temp'], dfFiltered['count']
+        df_filtered = df[df['weather'] == weather]
+        x, y = df_filtered['temp'], df_filtered['count']
         plt.scatter(x, y, label=weather, alpha=0.3, edgecolors='none')
 
     plt.legend()
@@ -87,10 +86,10 @@ def generateGraphs(df):
     plt.show()
 
     # Bar chart - Public Holiday count
-    for publicDay in [0, 1]:
-        dfFiltered = df[df['holiday'] == publicDay]
-        x, y = dfFiltered['count'], dfFiltered['holiday']
-        plt.scatter(x, y, label=publicDay, alpha=0.3)
+    for public_day in [0, 1]:
+        df_filtered = df[df['holiday'] == public_day]
+        x, y = df_filtered['count'], df_filtered['holiday']
+        plt.scatter(x, y, label=public_day, alpha=0.3)
     
     plt.yticks([0, 1], ['Normal', 'Public Holiday'])
     plt.xlabel('Count')
@@ -116,6 +115,8 @@ def generateGraphs(df):
     plt.xticks(rotation=45)
     ax.set_xlim(df['date'].min(), df['date'].max())
     plt.show()
+
+
     # Time Series Resampling Plot
     # parse dates (day/month/year)
     df['date'] = pd.to_datetime(df['date'], dayfirst=True, errors='coerce')
@@ -146,7 +147,7 @@ def generateGraphs(df):
     plt.show()
 
 
-def basicEDAGraphs(df):
+def basic_EDA_graphs(df):
     # Large values
     sns.boxplot(data=df['count'])
     plt.title('Count Column Variation')
@@ -157,7 +158,7 @@ def basicEDAGraphs(df):
     plt.show()
 
 
-def linearRegression(df):
+def linear_regression(df):
     # Parse with day-first, errors needed to work
     df['date'] = pd.to_datetime(df['date'], dayfirst=True, errors='coerce')
     failures = df[df['date'].isna() & df['date'].notna()].index
@@ -169,7 +170,7 @@ def linearRegression(df):
     # Split Data
     X = df.drop(["date", "count"], axis=1)
     y = df["count"]
-    categoricalFeatures = ['season', 'weather']
+    categorical_features = ['season', 'weather']
 
     # Making all Data numerical
     transformer = ColumnTransformer([("one_hot",
@@ -195,51 +196,51 @@ def linearRegression(df):
 
 
     sns.regplot(x=y_test, y=y_pred, ci=None, line_kws={"color":"red"})
-    plt.xlabel("Actual")
-    plt.ylabel("Predicted")
-    plt.title("Comparing predicted vs actual Count Values")
+    plt.xlabel("Actual Count")
+    plt.ylabel("Predicted Count")
+    plt.title("Comparing Predicted vs Actual Count Values")
     plt.show()
 
     return reg
 
 
-def predictCount(model):
+def predict_count(model):
     season = input("What season is this in?(Summer/Autumn/Winter/Spring): ")
     holiday = input("Is this a public holiday day?(Y/n): ")
     if holiday == "Y":
         holiday = 1
     else:
         holiday = 0
-    workDay = input("Is this a work day?(Y/n): ")
-    if workDay == "Y":
-        workDay = 1
+    work_day = input("Is this a work day?(Y/n): ")
+    if work_day == "Y":
+        work_day = 1
     else:
-        workDay = 0
+        work_day = 0
     weather = input("What is the predicted weather?(Clear, Cloudy, Rain, Storm): ")
     temp = round(float(input("Input what will the temperature be?: ")), 1)
     atemp = round(float(input("What is the apparent temperature?: ")), 1)
     humidity = round(float(input("What is the humidity?: ")), 1)
-    windSpeed = round(float(input("What is the windspeed in?(km/h): ")), 1)
+    wind_speed = round(float(input("What is the windspeed in?(km/h): ")), 1)
 
     X = pd.DataFrame([{
         "season": season, 
         "holiday": holiday, 
-        "workingday": workDay,
+        "workingday": work_day,
         "weather": weather,
         "temp": temp,
         "atemp": atemp,
         "humidity": humidity,
-        "windspeed": windSpeed
+        "windspeed": wind_speed
         }])
     # Making all Data numerical
-    categoricalFeatures = ['season','weather', 'holiday', 'workingday']
+    categorical_features = ['season','weather', 'holiday', 'workingday']
     transformer = ColumnTransformer([("one_hot",
                                     OneHotEncoder(categories = [
                                         ["Summer", "Autumn", "Winter", "Spring"],
                                         ["Clear", "Cloudy", "Rain", "Storm"],
                                         [0, 1],
                                         [0, 1]]),
-                                    categoricalFeatures)],
+                                    categorical_features)],
                                     remainder="passthrough")
     transformed_X = transformer.fit_transform(X)
 
@@ -248,7 +249,7 @@ def predictCount(model):
     print(output)
 
 
-def startFunc(bikeRentalData):
+def start_func(bike_rental_data):
     os.system('cls')
     print("The follow options can be done with the Dataset")
     print(' ' * 4, "1. 4 Number Summary")
@@ -262,38 +263,38 @@ def startFunc(bikeRentalData):
     num = 110
     while num not in range(0,7):
         print("To Exit Type 0")
-        userInput = input("Which Question Would you like Answered?: ")
+        user_input = input("Which Question Would you like Answered?: ")
         try:
-            num = int(userInput)
+            num = int(user_input)
         except ValueError:
             print("Please enter an interger number between 0 and 9")
 
     print(' ')
-    whichQuestion(num, bikeRentalData)
+    which_question(num, bike_rental_data)
 
-def whichQuestion(num, bikeRentalData):
+def which_question(num, bike_rental_data):
     if num == 1:
-        fiveNumSummary(bikeRentalData)
+        five_num_summary(bike_rental_data)
     elif num == 2:
-        basicEDAGraphs(bikeRentalData)
+        basic_EDA_graphs(bike_rental_data)
     elif num == 3:
-        generateGraphs(bikeRentalData)
+        generate_graphs(bike_rental_data)
     elif num == 4:
-        bikeRentalData = cleanData(bikeRentalData)
+        bike_rental_data = clean_data(bike_rental_data)
     elif num == 5:
         global model
-        model = linearRegression(bikeRentalData)
+        model = linear_regression(bike_rental_data)
     elif num == 6:
-        predictCount(model)
+        predict_count(model)
     else:
         print("Exiting Code Now")
         exit()
 
     print(' ')
     os.system("pause")
-    startFunc(bikeRentalData)
+    start_func(bike_rental_data)
     
 
 
-bikeRentalData = pd.read_csv("./bike_rental.csv")
-startFunc(bikeRentalData)
+bike_rental_data = pd.read_csv("./bike_rental.csv")
+start_func(bike_rental_data)
