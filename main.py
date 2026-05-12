@@ -192,12 +192,16 @@ def linear_regression(df):
     print("MSE:", mean_squared_error(y_test, y_pred))
     print("R² score:", r2_score(y_test, y_pred))
     print("RMSE:", root_mean_squared_error(y_test, y_pred))
-    print("RMLE:", root_mean_squared_log_error(y_test, y_pred))
 
-    sns.regplot(x=y_test, y=y_pred, ci=None, line_kws={"color":"red"})
-    plt.xlabel("Actual Count")
-    plt.ylabel("Predicted Count")
-    plt.title("Comparing Predicted vs Actual Count Values")
+    print(X_test)
+    print(y_test)
+    print(y_pred)
+
+    # Plot
+    plt.scatter(y_test, y_pred)
+    plt.xlabel("Test Counts")
+    plt.ylabel("Predicted Counts")
+    plt.title("Linear Regression Actual vs Predicted Values")
     plt.show()
 
     return reg
